@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://durgaprasadmothikari.com/sitemap.xml
+Sitemap: https://durgaprasadmothikari-ux.github.io/durga-prasad-portfolio/sitemap.xml
