@@ -63,20 +63,81 @@ function initCopyEmail() {
   });
 }
 
-// Contact Form Handling (Client-side feedback)
-function initContactForm() {
+// Contact Form Handling — Web3Forms
+async function initContactForm() {
   const form = document.getElementById('contact-form');
   const feedback = document.getElementById('contact-success-msg');
+  const submitButton = form?.querySelector('.btn-submit');
+  const submitText = submitButton?.querySelector('span');
+
   if (!form || !feedback) return;
 
-  form.addEventListener('submit', (e) => {
-    e.preventDefault();
-    feedback.classList.add('visible');
-    form.reset();
+  const WEB3FORMS_ACCESS_KEY = 'f4b2368b-22d1-4afa-abcd-9d35c2467f63';
 
-    setTimeout(() => {
-      feedback.classList.remove('visible');
-    }, 6000);
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const name = document.getElementById('contact-name')?.value.trim() || '';
+    const email = document.getElementById('contact-email')?.value.trim() || '';
+    const message = document.getElementById('contact-message')?.value.trim() || '';
+
+    if (!name || !email || !message) return;
+
+    const originalText = submitText?.textContent || 'Send Message';
+
+    if (submitButton) {
+      submitButton.disabled = true;
+      submitButton.style.opacity = '0.7';
+      submitButton.style.cursor = 'wait';
+    }
+    if (submitText) submitText.textContent = 'Sending...';
+
+    feedback.classList.remove('visible');
+
+    try {
+      const formData = new FormData();
+      formData.append('access_key', WEB3FORMS_ACCESS_KEY);
+      formData.append('name', name);
+      formData.append('email', email);
+      formData.append('message', message);
+      formData.append('subject', `New Portfolio Contact Message from ${name}`);
+      formData.append('from_name', 'Durga Prasad Portfolio');
+      formData.append('replyto', email);
+
+      const response = await fetch('https://api.web3forms.com/submit', {
+        method: 'POST',
+        body: formData
+      });
+
+      const result = await response.json();
+
+      if (!response.ok || !result.success) {
+        throw new Error(result.message || 'Unable to send message.');
+      }
+
+      feedback.textContent = "Thank you! Your message has been sent successfully. I'll get back to you soon.";
+      feedback.classList.add('visible');
+      form.reset();
+
+      setTimeout(() => {
+        feedback.classList.remove('visible');
+      }, 6000);
+    } catch (error) {
+      console.error('Web3Forms submission error:', error);
+      feedback.textContent = 'Sorry, your message could not be sent. Please try again or email me directly.';
+      feedback.classList.add('visible');
+
+      setTimeout(() => {
+        feedback.classList.remove('visible');
+      }, 7000);
+    } finally {
+      if (submitButton) {
+        submitButton.disabled = false;
+        submitButton.style.opacity = '';
+        submitButton.style.cursor = '';
+      }
+      if (submitText) submitText.textContent = originalText;
+    }
   });
 }
 
